@@ -1,9 +1,6 @@
 """Logistic regression model."""
 
-from calendar import EPOCH
-from os import XATTR_CREATE
 import numpy as np
-import pandas as pd
 
 
 class Logistic:
@@ -14,14 +11,12 @@ class Logistic:
             lr: the learning rate
             epochs: the number of epochs to train for
         """
-
-        self.w = None
+        self.w = None  # TODO: change this
         self.lr = lr
         self.epochs = epochs
-        self.threshold = threshold
+        self.threshold = 0.5
 
     def sigmoid(self, z: np.ndarray) -> np.ndarray:
-        
         """Sigmoid function.
 
         Parameters:
@@ -30,7 +25,8 @@ class Logistic:
         Returns:
             the sigmoid of the input
         """
-        return 1 / (1 + -1*np.exp(np.inner(self.w, z)))
+        # TODO: implemented
+        return 1 / (1 + np.exp(-1*np.inner(self.w, z)))
 
     def train(self, X_train: np.ndarray, y_train: np.ndarray):
         """Train the classifier.
@@ -44,13 +40,13 @@ class Logistic:
         """
 
         self.w = np.random.rand(X_train.shape[1])
-
+        # can potentially scale the update rule to inc/dec confidence
         for _ in range(self.epochs):
-            for dp in range(X_train[0]):
-                self.w = self.w + (self.lr * self.sigmoid(-y_train[dp]*np.inner(self.w, X_train[dp]))) 
-        
-        # TODO: implement me
-        pass
+            for dp in range(X_train.shape[0]):
+                if y_train[dp] == 1: #is a mushroom
+                    self.w = self.w + (self.lr * self.sigmoid(-X_train[dp])) * X_train[dp]
+                else:
+                    self.w = self.w - (self.lr * self.sigmoid(X_train[dp])) * X_train[dp]
 
     def predict(self, X_test: np.ndarray) -> np.ndarray:
         """Use the trained weights to predict labels for test data points.
@@ -64,10 +60,8 @@ class Logistic:
                 length N, where each element is an integer giving the predicted
                 class.
         """
-
         predictions = []
         for dp in range(X_test.shape[0]):
-            predictions.append(np.round(self.sigmoid(dp)))
+            predictions.append(np.round(self.sigmoid(X_test[dp])))
 
-        # TODO: implement me
         return predictions

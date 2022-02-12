@@ -35,15 +35,14 @@ class Perceptron:
 
         for _ in range(self.epochs):
             for dp in range(N):
+                # take the weight matrix (not vector, bc multiclass) and multiply it by the feature vector of one datapoint
                 predictions = self.w @ X_train[dp]
 
                 for class_label in range(self.n_class):
                     if class_label == y_train[dp]:
-                        self.w = self.w + self.lr*X_train[dp]
-                    elif predictions[class_label] > y_train[dp]:
-                        self.w = self.w -  self.lr*X_train[dp]
-
-        pass
+                        self.w[class_label] = self.w[class_label] + self.lr*X_train[dp]
+                    elif predictions[class_label] > predictions[y_train[dp]]:
+                        self.w[class_label] = self.w[class_label] - self.lr*X_train[dp]
 
     def predict(self, X_test: np.ndarray) -> np.ndarray:
         """Use the trained weights to predict labels for test data points.
@@ -63,3 +62,4 @@ class Perceptron:
             final_predictions.append(np.argmax(self.w @ X_test[dp]))
 
         return final_predictions
+
