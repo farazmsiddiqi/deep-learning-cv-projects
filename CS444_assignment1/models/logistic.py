@@ -41,12 +41,13 @@ class Logistic:
 
         self.w = np.random.rand(X_train.shape[1])
         # can potentially scale the update rule to inc/dec confidence
-        for _ in range(self.epochs):
+        for epoch in range(self.epochs):
+            decay = self.lr * (1 - epoch / self.epochs)
             for dp in range(X_train.shape[0]):
                 if y_train[dp] == 1: #is a mushroom
-                    self.w = self.w + (self.lr * self.sigmoid(-X_train[dp])) * X_train[dp]
+                    self.w = self.w + (decay * self.sigmoid(-X_train[dp])) * X_train[dp]
                 else:
-                    self.w = self.w - (self.lr * self.sigmoid(X_train[dp])) * X_train[dp]
+                    self.w = self.w - (decay * self.sigmoid(X_train[dp])) * X_train[dp]
 
     def predict(self, X_test: np.ndarray) -> np.ndarray:
         """Use the trained weights to predict labels for test data points.

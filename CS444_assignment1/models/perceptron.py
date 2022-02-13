@@ -18,6 +18,7 @@ class Perceptron:
         self.lr = lr
         self.epochs = epochs
         self.n_class = n_class
+        self.exp_param = .5
 
     def train(self, X_train: np.ndarray, y_train: np.ndarray):
         """Train the classifier.
@@ -33,16 +34,19 @@ class Perceptron:
 
         self.w = np.random.rand(self.n_class, D)
 
-        for _ in range(self.epochs):
+        for epoch in range(self.epochs):
             for dp in range(N):
                 # take the weight matrix (not vector, bc multiclass) and multiply it by the feature vector of one datapoint
                 predictions = self.w @ X_train[dp]
 
+                decay = self.lr * (1 - (N * epoch + dp) / (N * self.epochs)) ** self.exp_param
+                update_vec = decay * X_train[dp]
+
                 for class_label in range(self.n_class):
                     if class_label == y_train[dp]:
-                        self.w[class_label] = self.w[class_label] + self.lr*X_train[dp]
+                        self.w[class_label] = self.w[class_label] + update_vec
                     elif predictions[class_label] > predictions[y_train[dp]]:
-                        self.w[class_label] = self.w[class_label] - self.lr*X_train[dp]
+                        self.w[class_label] = self.w[class_label] - update_vec
 
     def predict(self, X_test: np.ndarray) -> np.ndarray:
         """Use the trained weights to predict labels for test data points.

@@ -18,6 +18,9 @@ class SVM:
         self.epochs = epochs
         self.reg_const = reg_const
         self.n_class = n_class
+        self.exp_param = .5
+        self.hinge_param = .5
+
 
     def calc_gradient(self, X_train: np.ndarray, y_train: np.ndarray) -> np.ndarray:
         """Calculate gradient of the svm hinge loss.
@@ -44,8 +47,9 @@ class SVM:
             scores = self.W @ X_train[obs]
             # Score for correct class
             correct_score = scores[y_train[obs]]
-            hinge_losses = 1 - correct_score + scores  # calculate hinge losses (ignored in for loop if non-positive)
-            update_vector = X_train[obs] * self.lr  # Saving computation time
+            hinge_losses = self.hinge_param * (1 - correct_score + scores)  # calculate hinge losses (ignored in for loop if non-positive)
+            update_vector = X_train[obs]  # Saving computation time
+
             # compute gradient for each observation and store values according to update rule from slides
             for c in range(self.n_class):
                 if hinge_losses[c] > 0 and c != y_train[obs]:
@@ -70,10 +74,11 @@ class SVM:
         self.W = np.random.rand(self.n_class, X_train.shape[1])  # Initializing the weights randomly
         mini_batch_size = min((250, N))  # in case we have fewer than 250 training points
 
-        for _ in range(self.epochs):
+        for epoch in range(self.epochs):
             batch_idx = np.random.choice(N, mini_batch_size)  # choose <batch_size> i.i.d. samples
             # Update weights using gradient (don't multiply by lr because already multiplied in calc_gradient)
-            self.W -= self.calc_gradient(X_train[batch_idx], y_train[batch_idx])
+            decay = self.lr * (1 - epoch / self.epochs) ** self.exp_param
+            self.W -= decay * self.calc_gradient(X_train[batch_idx], y_train[batch_idx])
 
     def predict(self, X_test: np.ndarray) -> np.ndarray:
         """Use the trained weights to predict labels for test data points.
