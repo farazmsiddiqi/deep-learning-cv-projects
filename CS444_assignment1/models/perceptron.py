@@ -1,8 +1,6 @@
 """Perceptron model."""
 
-from typing import final
 import numpy as np
-from sklearn.feature_selection import SelectFdr
 
 
 class Perceptron:
@@ -14,11 +12,10 @@ class Perceptron:
             lr: the learning rate
             epochs: the number of epochs to train for
         """
-        self.w = None  # TODO: change this (weights)
+        self.W = None  # TODO: updated in train()
         self.lr = lr
         self.epochs = epochs
         self.n_class = n_class
-        self.exp_param = .5
 
     def train(self, X_train: np.ndarray, y_train: np.ndarray):
         """Train the classifier.
@@ -30,23 +27,24 @@ class Perceptron:
                 N examples with D dimensions
             y_train: a numpy array of shape (N,) containing training labels
         """
-        N, D = X_train.shape[0], X_train.shape[1]
+        # TODO: implemented
+        # Initializing the weights and bias randomly
+        self.W = np.random.rand(self.n_class, X_train.shape[1]+1)
 
-        self.w = np.random.rand(self.n_class, D)
-
+        # Cycling through training data
         for epoch in range(self.epochs):
-            for dp in range(N):
-                # take the weight matrix (not vector, bc multiclass) and multiply it by the feature vector of one datapoint
-                predictions = self.w @ X_train[dp]
-
-                decay = self.lr * (1 - (N * epoch + dp) / (N * self.epochs)) ** self.exp_param
-                update_vec = decay * X_train[dp]
-
-                for class_label in range(self.n_class):
-                    if class_label == y_train[dp]:
-                        self.w[class_label] = self.w[class_label] + update_vec
-                    elif predictions[class_label] > predictions[y_train[dp]]:
-                        self.w[class_label] = self.w[class_label] - update_vec
+            for obs in range(X_train.shape[0]):
+                # Calculating predictions for all classes per observation
+                X_t_bias = np.append(X_train[obs], 1.0)
+                predictions = self.W @ X_t_bias
+                # Linearly decaying learning rate as number of epochs increases
+                decayed_lr = self.lr * (1 - epoch/self.epochs)
+                update_vector = decayed_lr * X_t_bias  # Saving computation time
+                # Update rule for each class
+                for c in range(self.n_class):
+                    if predictions[c] > predictions[y_train[obs]]:
+                        self.W[y_train[obs]] += update_vector
+                        self.W[c] -= update_vector
 
     def predict(self, X_test: np.ndarray) -> np.ndarray:
         """Use the trained weights to predict labels for test data points.
@@ -60,10 +58,6 @@ class Perceptron:
                 length N, where each element is an integer giving the predicted
                 class.
         """
-
-        final_predictions = []
-        for dp in range(X_test.shape[0]):
-            final_predictions.append(np.argmax(self.w @ X_test[dp]))
-
-        return final_predictions
-
+        # TODO: implemented
+        # Get all class predictions for each test observation and select class with highest score
+        return np.array([np.argmax(self.W @ np.append(X_test[i], 1)) for i in range(X_test.shape[0])])
