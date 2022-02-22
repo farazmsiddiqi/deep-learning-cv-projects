@@ -13,7 +13,9 @@ def write_csv(file_path: str, y_list: np.ndarray):
         file_path: name of the file to save
         y_list: y predictions
     """
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    directory = os.path.dirname(file_path)
+    if directory:
+        os.makedirs(directory, exist_ok=True)
     solution_rows = [("id", "category")] + [(i, y) for (i, y) in enumerate(y_list)]
     with open(file_path, "w") as f:
         writer = csv.writer(f)
